@@ -43,7 +43,7 @@ impl Registers {
         }
         print!("  {:02x}  {:04x}  {:02x}", self.i, self.pc, self.sp);
         if self.pc as usize <= MEMORY_SIZE - 2 {
-            let b = mem.u16_at(self.pc);
+            let b = mem.u16_at(self.pc as usize);
             match Instr::from(b) {
                 Some(instr) => print!("  {:?}", instr),
                 None => print!("  ????"),
@@ -69,7 +69,7 @@ impl Registers {
     fn step(&mut self, mem: &mut Memory, display: &mut Display) -> Result<(), String> {
         // check PC
 
-        let b = mem.u16_at(self.pc);
+        let b = mem.u16_at(self.pc as usize);
         match Instr::from(b) {
             Some(instr) => self.run_instr(mem, display, instr),
             None => Err(format!("could not parse {:04X} as instruction", b)),

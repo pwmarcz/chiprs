@@ -17,17 +17,17 @@ impl Memory {
         self.bytes[0..MEMORY_SIZE].copy_from_slice(&font[..]);
     }
 
-    pub fn load_program(&mut self, addr: u16, program: &[Instr]) {
+    pub fn load_program(&mut self, addr: usize, program: &[Instr]) {
         for (i, instr) in program.iter().enumerate() {
             let b: u16 = instr.to();
-            self.bytes[(addr as usize) + i * 2] = (b >> 8) as u8;
-            self.bytes[(addr as usize) + i * 2 + 1] = (b & 0xFF) as u8;
+            self.bytes[addr + i * 2] = (b >> 8) as u8;
+            self.bytes[addr + i * 2 + 1] = (b & 0xFF) as u8;
         }
     }
 
-    pub fn u16_at(&self, addr: u16) -> u16 {
-        return ((self.bytes[addr as usize] as u16) << 8) |
-                (self.bytes[(addr + 1) as usize] as u16);
+    pub fn u16_at(&self, addr: usize) -> u16 {
+        return ((self.bytes[addr] as u16) << 8) |
+                (self.bytes[addr + 1] as u16);
     }
 }
 
