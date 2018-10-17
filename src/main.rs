@@ -10,7 +10,7 @@ use display::Display;
 const V_SIZE: usize = 0x10;
 const STACK_SIZE: usize = 0x10;
 
-struct Registers {
+struct Chip {
     v: [u8; V_SIZE],
     i: u16,
     pc: u16,
@@ -18,11 +18,14 @@ struct Registers {
     stack: [u16; STACK_SIZE],
     dt: u8,
     st: u8,
+
+    memory: Memory,
+    display: Display,
 }
 
-impl Registers {
-    fn new() -> Registers {
-        Registers {
+impl Chip {
+    fn new() -> Chip {
+        Chip {
             v: [0; V_SIZE],
             i: 0,
             pc: 0,
@@ -30,10 +33,13 @@ impl Registers {
             stack: [0; STACK_SIZE],
             dt: 0,
             st: 0,
+
+            memory: Memory::new(),
+            display: Display::new(),
         }
     }
 
-    fn dump(&self, mem: &Memory) {
+    fn dump(&self) {
         for i in 0..V_SIZE {
             print!("V{:X} ", i);
         }
@@ -43,7 +49,7 @@ impl Registers {
         }
         print!("  {:02x}  {:04x}  {:02x}", self.i, self.pc, self.sp);
         if self.pc as usize <= MEMORY_SIZE - 2 {
-            let b = mem.u16_at(self.pc as usize);
+            let b = self.memory.u16_at(self.pc as usize);
             match Instr::from(b) {
                 Some(instr) => print!("  {:?}", instr),
                 None => print!("  ????"),
@@ -66,7 +72,7 @@ impl Registers {
         self.pc += 2;
     }
 
-    fn step(&mut self, mem: &mut Memory, display: &mut Display) -> Result<(), String> {
+    fn step(&mut self) -> Result<(), String> {
         if self.pc % 2 == 1 {
             return Err("PC is not aligned".to_string());
         }
@@ -74,20 +80,20 @@ impl Registers {
             return Err("PC out of bounds".to_string());
         }
 
-        let b = mem.u16_at(self.pc as usize);
+        let b = self.memory.u16_at(self.pc as usize);
         match Instr::from(b) {
-            Some(instr) => self.run_instr(mem, display, instr),
+            Some(instr) => self.run_instr(instr),
             None => Err(format!("could not parse {:04X} as instruction", b)),
         }
     }
 
-    fn run_instr(&mut self, mem: &mut Memory, display: &mut Display, instr: Instr) -> Result<(), String> {
+    fn run_instr(&mut self, instr: Instr) -> Result<(), String> {
         self.skip();
 
         use Instr::*;
         match instr {
             CLS => {
-                display.clear();
+                self.display.clear();
             }
             RET => {
                 if self.sp == 0 {
@@ -161,21 +167,21 @@ impl Registers {
                     return Err("I out of bounds".to_string());
                 }
                 let vx = self.v[x as usize];
-                mem.bytes[self.i as usize] = vx / 100;
-                mem.bytes[(self.i + 1)as usize] = (vx / 10) % 10;
-                mem.bytes[(self.i + 2) as usize] = (vx / 100) % 10;
+                self.memory.bytes[self.i as usize] = vx / 100;
+                self.memory.bytes[(self.i + 1)as usize] = (vx / 10) % 10;
+                self.memory.bytes[(self.i + 2) as usize] = (vx / 100) % 10;
             }
             LD_II_R(x) => {
                 if self.i as usize > MEMORY_SIZE - 1 {
                     return Err("I out of bounds".to_string());
                 }
-                mem.bytes[self.i as usize] = self.v[x as usize];
+                self.memory.bytes[self.i as usize] = self.v[x as usize];
             }
             LD_R_II(x) => {
                 if self.i as usize > MEMORY_SIZE - 1 {
                     return Err("I out of bounds".to_string());
                 }
-                self.v[x as usize] = mem.bytes[self.i as usize];
+                self.v[x as usize] = self.memory.bytes[self.i as usize];
             }
             OR(x, y) => {
                 self.v[x as usize] |= self.v[y as usize];
@@ -209,8 +215,8 @@ impl Registers {
             }
             // RND(x, yz)
             DRW(x, y, z) => {
-                let sprite = &mem.bytes[(self.i as usize)..((self.i + z as u16) as usize)];
-                let collision = display.draw(self.v[x as usize] as usize,
+                let sprite = &self.memory.bytes[(self.i as usize)..((self.i + z as u16) as usize)];
+                let collision = self.display.draw(self.v[x as usize] as usize,
                                              self.v[y as usize] as usize,
                                              sprite);
                 self.v[0xF] = collision as u8;
@@ -219,18 +225,23 @@ impl Registers {
         }
         Ok(())
     }
+
+    fn run_program(&mut self, addr: usize) -> Result<(), String> {
+        self.pc = addr as u16;
+        while self.pc != 0xFFF {
+            self.step()?;
+        }
+        Ok(())
+    }
 }
 
 fn main() {
-    let mut mem = Memory::new();
-    let mut reg = Registers::new();
-    let mut display = Display::new();
-
-    mem.load_font();
+    let mut chip = Chip::new();
+    chip.memory.load_font();
 
     use Instr::*;
     // Calc Fibonacci
-    mem.load_program(0x200, &[
+    chip.memory.load_program(0x200, &[
         LD_R_B(0, 7),
         LD_R_B(1, 1),
         LD_R_B(2, 0),
@@ -253,15 +264,11 @@ fn main() {
         JP(0x200 + 6),
     ]);
 
-    reg.pc = 0x200;
-    while reg.pc != 0xFFF {
-        // reg.dump(&mem);
-        reg.step(&mut mem, &mut display).unwrap();
-    }
-    assert_eq!(reg.v[1], 21);
-    assert_eq!(reg.v[2], 13);
+    chip.run_program(0x200).unwrap();
+    assert_eq!(chip.v[1], 21);
+    assert_eq!(chip.v[2], 13);
 
-    mem.load_program(0x200, &[
+    chip.memory.load_program(0x200, &[
         LD_R_B(0, 3),
         LD_R_B(1, 10),
         LD_R_B(2, 0xA),
@@ -279,10 +286,6 @@ fn main() {
         JP(0xFFF),
     ]);
 
-    reg.pc = 0x200;
-    while reg.pc != 0xFFF {
-        // reg.dump(&mem);
-        reg.step(&mut mem, &mut display).unwrap();
-    }
-    display.dump();
+    chip.run_program(0x200).unwrap();
+    chip.display.dump();
 }
