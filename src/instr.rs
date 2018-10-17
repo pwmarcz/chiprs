@@ -39,6 +39,7 @@ pub enum Instr {
     LD_II_R(Reg),
     LD_R_II(Reg),
 
+    ADD_R_B(Reg, u8),
     ADD_I_R(Reg),
 
     RND(Reg, u8),
@@ -59,9 +60,9 @@ impl Instr {
         let xyz: u16 = b & 0x0FFF;
 
         match a {
-            0x0 => match yz {
-                0xE0 => Some(CLS),
-                0xEE => Some(RET),
+            0x0 => match xyz {
+                0x0E0 => Some(CLS),
+                0x0EE => Some(RET),
                 _ => Some(SYS(xyz)),
             },
             0x1 => Some(JP(xyz)),
@@ -73,7 +74,7 @@ impl Instr {
                 _ => None,
             },
             0x6 => Some(LD_R_B(x, yz)),
-            0x7 => Some(ADD(x, yz)),
+            0x7 => Some(ADD_R_B(x, yz)),
             0x8 => match z {
                 0 => Some(LD_R_R(x, y)),
                 1 => Some(OR(x, y)),
@@ -111,7 +112,59 @@ impl Instr {
                 0x65 => Some(LD_R_II(x)),
                 _ => None,
             },
-            _ => None,
+            _ => panic!("impossible")
+        }
+    }
+
+    fn to(self) -> u16 {
+        use self::Instr::*;
+
+        fn _x(x: u8) -> u16 { (x as u16) << 8 }
+        fn _xy(x: u8, y: u8) -> u16 { ((x as u16) << 8) | ((y as u16) << 4)}
+        fn _yz(yz: u8) -> u16 { yz as u16 }
+        fn _xyz(x: u8, y: u8, z: u8) -> u16 { ((x as u16) << 8) | ((y as u16) << 4) | (z as u16) }
+
+        match self {
+            CLS => 0x00E0,
+            RET => 0x00EE,
+            SYS(xyz) => 0x0000 | xyz,
+            JP(xyz) => 0x1000 | xyz,
+            CALL(xyz) => 0x2000 | xyz,
+            JP_V0(xyz) => 0xB000 | xyz,
+            SE(x, yz) => 0x3000 | _x(x) | _yz(yz),
+            SNE(x, yz) => 0x4000 | _x(x) | _yz(yz),
+            SE_R(x, y) => 0x5000 | _xy(x, y),
+            SNE_R(x, y) => 0x9000 | _xy(x, y),
+
+            OR(x, y) => 0x8001 | _xy(x, y),
+            AND(x, y) => 0x8002 | _xy(x, y),
+            XOR(x, y) => 0x8003 | _xy(x, y),
+            ADD(x, y) => 0x8004 | _xy(x, y),
+            SUB(x, y) => 0x8005 | _xy(x, y),
+            SUBN(x, y) => 0x8007 | _xy(x, y),
+
+            SHR(x, y) => 0x8006 | _xy(x, y),
+            SHL(x, y) => 0x800E | _xy(x, y),
+
+            LD_R_B(x, yz) => 0x6000 | _x(x) | _yz(yz),
+            LD_R_R(x, y) => 0x8000 | _xy(x, y),
+            LD_I_A(xyz) => 0xA000 | xyz,
+            LD_R_DT(x) => 0xF007 | _x(x),
+            LD_R_K(x) => 0xF00A | _x(x),
+            LD_DT_R(x) => 0xF015 | _x(x),
+            LD_ST_R(x) => 0xF018 | _x(x),
+            LD_F_R(x) => 0xF029 | _x(x),
+            LD_B_R(x) => 0xF033 | _x(x),
+            LD_II_R(x) => 0xF055 | _x(x),
+            LD_R_II(x) => 0xF065 | _x(x),
+
+            ADD_R_B(x, yz) => 0x7000 | _x(x) | _yz(yz),
+            ADD_I_R(x) => 0xF01E | _x(x),
+
+            RND(x, yz) => 0xC000 | _x(x) | _yz(yz),
+            DRW(x, y, z) => 0xD000 | _xyz(x, y, z),
+            SKP(x) => 0xE09E | _x(x),
+            SKNP(x) => 0xE0A1 | _x(x),
         }
     }
 }
@@ -132,7 +185,7 @@ mod tests {
         (0x4123, SNE(0x1, 0x23)),
         (0x5120, SE_R(0x1, 0x2)),
         (0x6123, LD_R_B(0x1, 0x23)),
-        (0x7123, ADD(0x1, 0x23)),
+        (0x7123, ADD_R_B(0x1, 0x23)),
         (0x8120, LD_R_R(0x1, 0x2)),
         (0x8121, OR(0x1, 0x2)),
         (0x8122, AND(0x1, 0x2)),
@@ -171,11 +224,27 @@ mod tests {
     #[test]
     fn test_from() {
         for (b, i) in LEGAL.iter() {
-            assert_eq!(Instr::from(*b), Some(*i), "{:04x} should parse", *b);
+            assert_eq!(Instr::from(*b), Some(*i), "{:04X} should parse to {:?}", *b, *i);
         }
 
         for b in ILLEGAL.iter() {
-            assert_eq!(Instr::from(*b), None, "{:04x} should not parse", *b);
+            assert_eq!(Instr::from(*b), None, "{:04X} should not parse", *b);
+        }
+    }
+
+    #[test]
+    fn test_to() {
+        for (b, i) in LEGAL.iter() {
+            assert_eq!(i.to(), *b, "{:?} should generate {:04X}", *i, *b);
+        }
+    }
+
+    #[test]
+    fn test_all() {
+        for b in 0x0000..=0xFFFF {
+            if let Some(i) = Instr::from(b) {
+                assert_eq!(i.to(), b, "{:?} should generate back {:04X}", i, b)
+            }
         }
     }
 }
