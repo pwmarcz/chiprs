@@ -41,6 +41,10 @@ impl Display {
         }
     }
 
+    pub fn at(&self, x: usize, y: usize) -> bool {
+        return self.pixels[y * DISPLAY_W + x];
+    }
+
     pub fn clear(&mut self) {
         for b in self.pixels.iter_mut() {
             *b = false;
