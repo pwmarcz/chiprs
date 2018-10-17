@@ -49,7 +49,7 @@ pub enum Instr {
 }
 
 impl Instr {
-    fn from(b: u16) -> Option<Instr> {
+    pub fn from(b: u16) -> Option<Instr> {
         use self::Instr::*;
 
         let a: u8 = ((b & 0xF000) >> 12) as u8;
@@ -116,7 +116,7 @@ impl Instr {
         }
     }
 
-    fn to(self) -> u16 {
+    pub fn to(self) -> u16 {
         use self::Instr::*;
 
         fn _x(x: u8) -> u16 { (x as u16) << 8 }
