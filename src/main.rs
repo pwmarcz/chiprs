@@ -81,7 +81,9 @@ impl Registers {
 
         use Instr::*;
         match instr {
-            // CLS
+            CLS => {
+                display.clear();
+            }
             RET => {
                 self.sp -= 1;
                 self.pc = self.stack[self.sp as usize];
@@ -247,6 +249,8 @@ fn main() {
         LD_R_B(2, 0xA),
         LD_F_R(2),
         DRW(0, 1, 5),
+
+        CLS,
 
         LD_R_B(0, 8),
         LD_R_B(1, 10),

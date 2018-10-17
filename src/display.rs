@@ -40,4 +40,10 @@ impl Display {
             println!();
         }
     }
+
+    pub fn clear(&mut self) {
+        for b in self.pixels.iter_mut() {
+            *b = false;
+        }
+    }
 }
