@@ -25,6 +25,17 @@ impl Memory {
         }
     }
 
+    pub fn load_program_from_file(&mut self, addr: usize, filename: &str)
+                                  -> ::std::io::Result<()> {
+        use std::fs::File;
+        use std::io::Read;
+        let mut f = File::open(filename)?;
+        let mut buf = vec![];
+        f.read_to_end(&mut buf)?;
+        &self.bytes[addr..addr+buf.len()].copy_from_slice(&buf);
+        Ok(())
+    }
+
     pub fn u16_at(&self, addr: usize) -> u16 {
         return ((self.bytes[addr] as u16) << 8) |
                 (self.bytes[addr + 1] as u16);
