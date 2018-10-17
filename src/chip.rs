@@ -83,9 +83,6 @@ impl Chip {
     }
 
     pub fn step(&mut self) -> Result<(), String> {
-        if self.pc % 2 == 1 {
-            return Err("PC is not aligned".to_string());
-        }
         if self.pc as usize > MEMORY_SIZE - 2 {
             return Err("PC out of bounds".to_string());
         }
