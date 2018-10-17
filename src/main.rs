@@ -67,7 +67,12 @@ impl Registers {
     }
 
     fn step(&mut self, mem: &mut Memory, display: &mut Display) -> Result<(), String> {
-        // check PC
+        if self.pc % 2 == 1 {
+            return Err("PC is not aligned".to_string());
+        }
+        if self.pc as usize > MEMORY_SIZE - 2 {
+            return Err("PC out of bounds".to_string());
+        }
 
         let b = mem.u16_at(self.pc as usize);
         match Instr::from(b) {
@@ -85,6 +90,9 @@ impl Registers {
                 display.clear();
             }
             RET => {
+                if self.sp == 0 {
+                    return Err("stack underflow".to_string());
+                }
                 self.sp -= 1;
                 self.pc = self.stack[self.sp as usize];
             }
@@ -96,6 +104,10 @@ impl Registers {
                 self.pc = xyz + (self.v[0] as u16);
             }
             CALL(xyz) => {
+                if self.sp as usize > STACK_SIZE {
+                    return Err("stack overflow".to_string());
+                }
+
                 self.stack[self.sp as usize] = self.pc;
                 self.sp += 1;
                 self.pc = xyz;
@@ -140,23 +152,29 @@ impl Registers {
                 self.st = self.v[x as usize];
             }
             LD_F_R(x) => {
-                // check if vx <= 0xF
+                // check if vx <= 0xF?
                 let vx = self.v[x as usize];
                 self.i = (vx as u16) * 5;
             }
             LD_B_R(x) => {
+                if self.i as usize > MEMORY_SIZE - 3 {
+                    return Err("I out of bounds".to_string());
+                }
                 let vx = self.v[x as usize];
-                // check I
                 mem.bytes[self.i as usize] = vx / 100;
                 mem.bytes[(self.i + 1)as usize] = (vx / 10) % 10;
                 mem.bytes[(self.i + 2) as usize] = (vx / 100) % 10;
             }
             LD_II_R(x) => {
-                // check I
+                if self.i as usize > MEMORY_SIZE - 1 {
+                    return Err("I out of bounds".to_string());
+                }
                 mem.bytes[self.i as usize] = self.v[x as usize];
             }
             LD_R_II(x) => {
-                // check I
+                if self.i as usize > MEMORY_SIZE - 1 {
+                    return Err("I out of bounds".to_string());
+                }
                 self.v[x as usize] = mem.bytes[self.i as usize];
             }
             OR(x, y) => {
