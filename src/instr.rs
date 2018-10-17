@@ -2,7 +2,8 @@ type Reg = u8;
 type Addr = u16;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum Instr {
+#[allow(non_camel_case_types)]
+pub enum Instr {
     CLS,
     RET,
     SYS(Addr),
