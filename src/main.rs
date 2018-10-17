@@ -1,3 +1,5 @@
+mod instr;
+
 const MEMORY_SIZE: usize = 0x1000;
 const V_SIZE: usize = 0x10;
 const STACK_SIZE: usize = 0x10;
