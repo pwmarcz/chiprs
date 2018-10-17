@@ -1,0 +1,10 @@
+[package]
+name = "chiprs"
+version = "0.1.0"
+authors = ["Paweł Marczewski <pwmarcz@gmail.com>"]
+
+[dependencies]
+
+[[bin]]
+name = "chiprs"
+path = "src/main.rs"
