@@ -76,6 +76,12 @@ impl Chip {
         self.pc += 2;
     }
 
+    pub fn tick(&mut self) {
+        if self.dt > 0 {
+            self.dt -= 1;
+        }
+    }
+
     pub fn step(&mut self) -> Result<(), String> {
         if self.pc % 2 == 1 {
             return Err("PC is not aligned".to_string());

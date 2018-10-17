@@ -5,7 +5,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use chip::Chip;
 use display::{Display, DISPLAY_W, DISPLAY_H};
@@ -26,6 +26,8 @@ pub fn run_sdl_interface(chip: &mut Chip) {
 
     let mut canvas = window.into_canvas().build().unwrap();
     let mut events = sdl_context.event_pump().unwrap();
+    let mut next_tick = Instant::now();
+    let mut next_step = Instant::now();
     'running: loop {
         for event in events.poll_iter() {
             match event {
@@ -40,9 +42,14 @@ pub fn run_sdl_interface(chip: &mut Chip) {
         draw_display(&mut canvas, &chip.display);
         canvas.present();
 
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-        if chip.pc != 0xFFF {
+        let now = Instant::now();
+        while next_tick < now {
+            chip.tick();
+            next_tick += Duration::new(0, 1_000_000_000u32 / 60);
+        }
+        while next_step < now {
             chip.step().unwrap();
+            next_step += Duration::new(0, 1_000_000_000u32 / 500);
         }
     }
 }
