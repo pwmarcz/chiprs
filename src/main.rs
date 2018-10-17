@@ -4,6 +4,9 @@ use instr::Instr;
 mod memory;
 use memory::{Memory, MEMORY_SIZE};
 
+mod display;
+use display::Display;
+
 const V_SIZE: usize = 0x10;
 const STACK_SIZE: usize = 0x10;
 
@@ -63,17 +66,17 @@ impl Registers {
         self.pc += 2;
     }
 
-    fn step(&mut self, mem: &mut Memory) -> Result<(), String> {
+    fn step(&mut self, mem: &mut Memory, display: &mut Display) -> Result<(), String> {
         // check PC
 
         let b = mem.u16_at(self.pc);
         match Instr::from(b) {
-            Some(instr) => self.run_instr(mem, instr),
+            Some(instr) => self.run_instr(mem, display, instr),
             None => Err(format!("could not parse {:04X} as instruction", b)),
         }
     }
 
-    fn run_instr(&mut self, mem: &mut Memory, instr: Instr) -> Result<(), String> {
+    fn run_instr(&mut self, mem: &mut Memory, display: &mut Display, instr: Instr) -> Result<(), String> {
         self.skip();
 
         use Instr::*;
@@ -185,7 +188,13 @@ impl Registers {
                 self.v[0xF] = (!bit) as u8;
             }
             // RND(x, yz)
-            // DRW(x, y, z)
+            DRW(x, y, z) => {
+                let sprite = &mem.bytes[(self.i as usize)..((self.i + z as u16) as usize)];
+                let collision = display.draw(self.v[x as usize] as usize,
+                                             self.v[y as usize] as usize,
+                                             sprite);
+                self.v[0xF] = collision as u8;
+            }
             _ => return Err(format!("instruction not implemented: {:?}", instr)),
         }
         Ok(())
@@ -195,6 +204,7 @@ impl Registers {
 fn main() {
     let mut mem = Memory::new();
     let mut reg = Registers::new();
+    let mut display = Display::new();
 
     mem.load_font();
 
@@ -225,9 +235,32 @@ fn main() {
 
     reg.pc = 0x200;
     while reg.pc != 0xFFF {
-        reg.dump(&mem);
-        reg.step(&mut mem).unwrap();
+        // reg.dump(&mem);
+        reg.step(&mut mem, &mut display).unwrap();
     }
     assert_eq!(reg.v[1], 21);
     assert_eq!(reg.v[2], 13);
+
+    mem.load_program(0x200, &[
+        LD_R_B(0, 3),
+        LD_R_B(1, 10),
+        LD_R_B(2, 0xA),
+        LD_F_R(2),
+        DRW(0, 1, 5),
+
+        LD_R_B(0, 8),
+        LD_R_B(1, 10),
+        LD_R_B(2, 0x7),
+        LD_F_R(2),
+        DRW(0, 1, 5),
+
+        JP(0xFFF),
+    ]);
+
+    reg.pc = 0x200;
+    while reg.pc != 0xFFF {
+        // reg.dump(&mem);
+        reg.step(&mut mem, &mut display).unwrap();
+    }
+    display.dump();
 }
