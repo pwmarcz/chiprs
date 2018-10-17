@@ -23,8 +23,8 @@ impl Memory {
     }
 
     fn u16_at(&self, addr: u16) -> u16 {
-        return (((self.bytes[addr as usize] as u16) << 8) |
-                (self.bytes[(addr + 1) as usize] as u16));
+        return ((self.bytes[addr as usize] as u16) << 8) |
+                (self.bytes[(addr + 1) as usize] as u16);
     }
 }
 
@@ -34,6 +34,8 @@ struct Registers {
     pc: u16,
     sp: u8,
     stack: [u16; STACK_SIZE],
+    dt: u8,
+    st: u8,
 }
 
 impl Registers {
@@ -43,7 +45,9 @@ impl Registers {
             i: 0,
             pc: 0,
             sp: 0,
-            stack: [0; STACK_SIZE]
+            stack: [0; STACK_SIZE],
+            dt: 0,
+            st: 0,
         }
     }
 
@@ -104,6 +108,9 @@ impl Registers {
             JP(xyz) => {
                 self.pc = xyz;
             }
+            JP_V0(xyz) => {
+                self.pc = xyz + (self.v[0] as u16);
+            }
             CALL(xyz) => {
                 self.stack[self.sp as usize] = self.pc;
                 self.sp += 1;
@@ -135,6 +142,48 @@ impl Registers {
             LD_R_B(x, yz) => {
                 self.v[x as usize] = yz;
             }
+            LD_I_A(xyz) => {
+                self.i = xyz;
+            }
+            LD_R_DT(x) => {
+                self.v[x as usize] = self.dt;
+            }
+            // LD_R_K(x) - wait for a keypress
+            LD_DT_R(x) => {
+                self.dt = self.v[x as usize];
+            }
+            LD_ST_R(x) => {
+                self.st = self.v[x as usize];
+            }
+            LD_F_R(x) => {
+                // check if vx <= 0xF
+                let vx = self.v[x as usize];
+                self.i = (vx as u16) * 5;
+            }
+            LD_B_R(x) => {
+                let vx = self.v[x as usize];
+                // check I
+                mem.bytes[self.i as usize] = vx / 100;
+                mem.bytes[(self.i + 1)as usize] = (vx / 10) % 10;
+                mem.bytes[(self.i + 2) as usize] = (vx / 100) % 10;
+            }
+            LD_II_R(x) => {
+                // check I
+                mem.bytes[self.i as usize] = self.v[x as usize];
+            }
+            LD_R_II(x) => {
+                // check I
+                self.v[x as usize] = mem.bytes[self.i as usize];
+            }
+            OR(x, y) => {
+                self.v[x as usize] |= self.v[y as usize];
+            }
+            AND(x, y) => {
+                self.v[x as usize] &= self.v[y as usize];
+            }
+            XOR(x, y) => {
+                self.v[x as usize] ^= self.v[y as usize];
+            }
             ADD(x, y) => {
                 let vx = self.v[x as usize];
                 let vy = self.v[y as usize];
@@ -149,6 +198,15 @@ impl Registers {
                 self.v[x as usize] = result;
                 self.v[0xF] = (!bit) as u8;
             }
+            SUBN(x, y) => {
+                let vx = self.v[x as usize];
+                let vy = self.v[y as usize];
+                let (result, bit) = vy.overflowing_sub(vx);
+                self.v[x as usize] = result;
+                self.v[0xF] = (!bit) as u8;
+            }
+            // RND(x, yz)
+            // DRW(x, y, z)
             _ => return Err(format!("instruction not implemented: {:?}", instr)),
         }
         Ok(())
