@@ -196,9 +196,11 @@ fn main() {
     let mut mem = Memory::new();
     let mut reg = Registers::new();
 
+    mem.load_font();
+
     use Instr::*;
     // Calc Fibonacci
-    mem.load_program(&[
+    mem.load_program(0x200, &[
         LD_R_B(0, 7),
         LD_R_B(1, 1),
         LD_R_B(2, 0),
@@ -218,11 +220,14 @@ fn main() {
         SUB(0, 3),
 
         // jump to loop
-        JP(6),
+        JP(0x200 + 6),
     ]);
 
+    reg.pc = 0x200;
     while reg.pc != 0xFFF {
         reg.dump(&mem);
         reg.step(&mut mem).unwrap();
     }
+    assert_eq!(reg.v[1], 21);
+    assert_eq!(reg.v[2], 13);
 }
