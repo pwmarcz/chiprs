@@ -11,6 +11,7 @@ use display::Display;
 
 const V_SIZE: usize = 0x10;
 const STACK_SIZE: usize = 0x10;
+const KEYS_SIZE: usize = 0x10;
 
 struct Chip {
     v: [u8; V_SIZE],
@@ -20,6 +21,7 @@ struct Chip {
     stack: [u16; STACK_SIZE],
     dt: u8,
     st: u8,
+    keys: [bool; KEYS_SIZE],
 
     memory: Memory,
     display: Display,
@@ -37,6 +39,7 @@ impl Chip {
             stack: [0; STACK_SIZE],
             dt: 0,
             st: 0,
+            keys: [false; KEYS_SIZE],
 
             memory: Memory::new(),
             display: Display::new(),
@@ -205,6 +208,12 @@ impl Chip {
                 self.v[x as usize] = result;
                 self.v[0xF] = bit as u8;
             }
+            ADD_R_B(x, yz) => {
+                let vx = self.v[x as usize];
+                let (result, bit) = vx.overflowing_add(yz);
+                self.v[x as usize] = result;
+                self.v[0xF] = bit as u8;
+            }
             SUB(x, y) => {
                 let vx = self.v[x as usize];
                 let vy = self.v[y as usize];
@@ -243,7 +252,30 @@ impl Chip {
                                              sprite);
                 self.v[0xF] = collision as u8;
             }
-            _ => return Err(format!("instruction not implemented: {:?}", instr)),
+            ADD_I_R(x) => {
+                self.i =self.i.wrapping_add(self.v[x as usize] as u16);
+            }
+            SKP(x) => {
+                let key = self.v[x as usize] as usize;
+                if key >= KEYS_SIZE {
+                    return Err(format!("SKP: wrong key: {:02X}", key));
+                }
+                if self.keys[key] {
+                    self.skip();
+                }
+            }
+            SKNP(x) => {
+                let key = self.v[x as usize] as usize;
+                if key >= KEYS_SIZE {
+                    return Err(format!("SKP: wrong key: {:02X}", key));
+                }
+                if !self.keys[key] {
+                    self.skip();
+                }
+            }
+            LD_R_K(x) => {
+                return Err("LD_R_K: not implemented".to_string());
+            }
         }
         Ok(())
     }
