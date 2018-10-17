@@ -1,3 +1,5 @@
+extern crate rand;
+
 mod instr;
 use instr::Instr;
 
@@ -21,6 +23,8 @@ struct Chip {
 
     memory: Memory,
     display: Display,
+
+    rng: rand::rngs::ThreadRng,
 }
 
 impl Chip {
@@ -36,6 +40,8 @@ impl Chip {
 
             memory: Memory::new(),
             display: Display::new(),
+
+            rng: rand::thread_rng(),
         }
     }
 
@@ -213,7 +219,23 @@ impl Chip {
                 self.v[x as usize] = result;
                 self.v[0xF] = (!bit) as u8;
             }
-            // RND(x, yz)
+            SHL(x, _y) => {
+                let vx = self.v[x as usize];
+                let (result, bit) = vx.overflowing_shl(1);
+                self.v[x as usize] = result;
+                self.v[0xF] = bit as u8;
+            }
+            SHR(x, _y) => {
+                let vx = self.v[x as usize];
+                let (result, bit) = vx.overflowing_shr(1);
+                self.v[x as usize] = result;
+                self.v[0xF] = bit as u8;
+            }
+            RND(x, yz) => {
+                use rand::Rng;
+                let r: u8 = self.rng.gen();
+                self.v[x as usize] = r & yz;
+            }
             DRW(x, y, z) => {
                 let sprite = &self.memory.bytes[(self.i as usize)..((self.i + z as u16) as usize)];
                 let collision = self.display.draw(self.v[x as usize] as usize,
