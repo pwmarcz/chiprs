@@ -5,6 +5,7 @@ authors = ["Paweł Marczewski <pwmarcz@gmail.com>"]
 
 [dependencies]
 rand = "0.6.0-pre.0"
+sdl2 = "0.32.0-beta.2"
 
 [[bin]]
 name = "chiprs"
