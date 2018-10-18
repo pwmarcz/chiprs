@@ -1,5 +1,9 @@
 # `chiprs` - a Rust Chip-8 emulator
 
+This is a simple project I'm writing to teach myself Rust.
+
+See [CHIP-8 technical specification](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM).
+
 ## Directory structure
 
 * [`chiprs`](chiprs) - emulator engine
