@@ -32,10 +32,22 @@ pub fn run_sdl_interface(chip: &mut Chip) {
     'running: loop {
         for event in events.poll_iter() {
             match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'running
-                },
+                Event::Quit {..} => {
+                    break 'running;
+                }
+                Event::KeyDown { keycode: Some(key), .. } => {
+                    if key == Keycode::Escape {
+                        break 'running;
+                    }
+                    if let Some(k) = get_chip8_key(key) {
+                        chip.keys[k as usize] = true;
+                    }
+                }
+                Event::KeyUp { keycode: Some(key), .. } => {
+                    if let Some(k) = get_chip8_key(key) {
+                        chip.keys[k as usize] = false;
+                    }
+                }
                 _ => {}
             }
         }
@@ -69,5 +81,45 @@ fn draw_display(canvas: &mut WindowCanvas,
                     PIXEL_W as u32, PIXEL_H as u32)).unwrap();
             }
         }
+    }
+}
+
+fn get_chip8_key(key: Keycode) -> Option<u8> {
+    use sdl2::keyboard::Keycode::*;
+    match key {
+        Num0 | Kp0 =>
+            Some(0x0),
+        Num1 | Kp1 =>
+            Some(0x1),
+        Num2 | Kp2 | Up =>
+            Some(0x2),
+        Num3 | Kp3 =>
+            Some(0x3),
+        Num4 | Kp4 | Left =>
+            Some(0x4),
+        Num5 | Kp5 =>
+            Some(0x5),
+        Num6 | Kp6 | Right =>
+            Some(0x6),
+        Num7 | Kp7 =>
+            Some(0x7),
+        Num8 | Kp8 | Down =>
+            Some(0x8),
+        Num9 | Kp9 =>
+            Some(0x9),
+        A =>
+            Some(0xA),
+        B =>
+            Some(0xB),
+        C =>
+            Some(0xC),
+        D =>
+            Some(0xD),
+        E =>
+            Some(0xE),
+        F =>
+            Some(0xF),
+        _ =>
+            None,
     }
 }
