@@ -1,4 +1,2 @@
-main
-
-/target
+**/target
 **/*.rs.bk

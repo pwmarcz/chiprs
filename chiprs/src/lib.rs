@@ -1,12 +1,16 @@
 extern crate rand;
 
+pub mod instr;
+pub mod memory;
+pub mod display;
+
 use instr::Instr;
 use memory::{Memory, MEMORY_SIZE};
 use display::Display;
 
-const V_SIZE: usize = 0x10;
-const STACK_SIZE: usize = 0x10;
-const KEYS_SIZE: usize = 0x10;
+pub const V_SIZE: usize = 0x10;
+pub const STACK_SIZE: usize = 0x10;
+pub const KEYS_SIZE: usize = 0x10;
 
 pub struct Chip {
     pub v: [u8; V_SIZE],

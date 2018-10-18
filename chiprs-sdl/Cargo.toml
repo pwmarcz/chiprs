@@ -1,12 +1,12 @@
 [package]
-name = "chiprs"
+name = "chiprs-sdl"
 version = "0.1.0"
 authors = ["Paweł Marczewski <pwmarcz@gmail.com>"]
 
 [dependencies]
-rand = "0.6.0-pre.0"
 sdl2 = "0.32.0-beta.2"
+chiprs = { path = "../chiprs" }
 
 [[bin]]
-name = "chiprs"
+name = "chiprs-sdl"
 path = "src/main.rs"

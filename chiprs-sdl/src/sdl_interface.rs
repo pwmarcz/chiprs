@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate chiprs;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -7,8 +8,8 @@ use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 use std::time::{Duration, Instant};
 
-use chip::Chip;
-use display::{Display, DISPLAY_W, DISPLAY_H};
+use chiprs::Chip;
+use chiprs::display::{Display, DISPLAY_W, DISPLAY_H};
 
 const PIXEL_W: usize = 10;
 const PIXEL_H: usize = 10;

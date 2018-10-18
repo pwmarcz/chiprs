@@ -1,14 +1,10 @@
 extern crate sdl2;
-extern crate rand;
+extern crate chiprs;
 
-mod instr;
-mod memory;
-mod display;
-mod chip;
 mod sdl_interface;
 
 use sdl_interface::run_sdl_interface;
-use chip::Chip;
+use chiprs::Chip;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
