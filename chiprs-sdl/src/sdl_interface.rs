@@ -40,12 +40,12 @@ pub fn run_sdl_interface(chip: &mut Chip) {
                         break 'running;
                     }
                     if let Some(k) = get_chip8_key(key) {
-                        chip.keys[k as usize] = true;
+                        chip.key_down(k);
                     }
                 }
                 Event::KeyUp { keycode: Some(key), .. } => {
                     if let Some(k) = get_chip8_key(key) {
-                        chip.keys[k as usize] = false;
+                        chip.key_up(k);
                     }
                 }
                 _ => {}

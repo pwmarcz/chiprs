@@ -21,6 +21,7 @@ pub struct Chip {
     pub dt: u8,
     pub st: u8,
     pub keys: [bool; KEYS_SIZE],
+    pub key_wait_reg: Option<u8>,
 
     pub memory: Memory,
     pub display: Display,
@@ -39,6 +40,7 @@ impl Chip {
             dt: 0,
             st: 0,
             keys: [false; KEYS_SIZE],
+            key_wait_reg: None,
 
             memory: Memory::new(),
             display: Display::new(),
@@ -76,6 +78,20 @@ impl Chip {
         println!();
     }
 
+    pub fn key_down(&mut self, key: u8) {
+        if let Some(x) = self.key_wait_reg {
+            if !self.keys[key as usize] {
+                self.v[x as usize] = key;
+                self.key_wait_reg = None;
+            }
+        }
+        self.keys[key as usize] = true;
+    }
+
+    pub fn key_up(&mut self, key: u8) {
+        self.keys[key as usize] = false;
+    }
+
     fn skip(&mut self) {
         self.pc += 2;
     }
@@ -89,6 +105,10 @@ impl Chip {
     pub fn step(&mut self) -> Result<(), String> {
         if self.pc as usize > MEMORY_SIZE - 2 {
             return Err("PC out of bounds".to_string());
+        }
+
+        if self.key_wait_reg != None {
+            return Ok(());
         }
 
         let b = self.memory.u16_at(self.pc as usize);
@@ -274,8 +294,8 @@ impl Chip {
                     self.skip();
                 }
             }
-            LD_R_K(_x) => {
-                return Err("LD_R_K: not implemented".to_string());
+            LD_R_K(x) => {
+                self.key_wait_reg = Some(x);
             }
         }
         Ok(())
