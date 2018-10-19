@@ -21,6 +21,15 @@ SDL2 library (something like `libsdl2-dev`).
     cd chiprs-sdl
     cargo run ../games/<game>.ch8
 
+The keyboard layout is:
+
+| 1  | 2↑ | 3  | C |
+| 4← | 5  | 6→ | D |
+| 7  | 8↓ | 9  | E |
+| A  | 0  | B  | F |
+
+You can also use the arrow keys:
+
 ## License
 
 By Paweł Marczewski <pwmarcz@gmail.com>.
