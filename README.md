@@ -2,8 +2,8 @@
 
 This is a simple project I'm writing to teach myself Rust.
 
-![cave](img/cave.png)
-![connect4](img/connect4.png)
+![cave](img/cave-50.png)
+![connect4](img/connect4-50.png)
 
 See [CHIP-8 technical specification](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM).
 
