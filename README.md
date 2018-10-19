@@ -12,7 +12,8 @@ See [CHIP-8 technical specification](http://devernay.free.fr/hacks/chip8/C8TECH1
 
 ## Usage
 
-You likely need `libsdl2-dev` installed.
+You need to [install Rust and Cargo](https://rustup.rs/). You'll also need the
+SDL2 library (something like `libsdl2-dev`).
 
     cd chiprs-sdl
     cargo run ../games/<game>.ch8
