@@ -9,9 +9,9 @@ See [CHIP-8 technical specification](http://devernay.free.fr/hacks/chip8/C8TECH1
 
 ## Directory structure
 
-* [`chiprs`](chiprs) - emulator engine
-* [`chiprs-sdl`](chiprs) - SDL emulator
-* [`games`] - game ROMs, taken from http://devernay.free.fr/hacks/chip8/
+* [`chiprs/`](chiprs) - emulator engine
+* [`chiprs-sdl/`](chiprs) - SDL emulator
+* [`games/`](games) - game ROMs, taken from http://devernay.free.fr/hacks/chip8/
 
 ## Usage
 
@@ -29,9 +29,6 @@ The keyboard layout is:
 | 4← | 5  | 6→ | D  |
 | 7  | 8↓ | 9  | E  |
 | A  | 0  | B  | F  |
-
-
-You can also use the arrow keys:
 
 ## License
 
