@@ -25,7 +25,7 @@ fn run(filename: &str) {
     chip.memory.load_font();
 
     chip.memory.load_program_from_file(0x200, filename).unwrap();
-    chip.pc = 0x200;
+    chip.jump(0x200);
 
     run_sdl_interface(&mut chip);
 }

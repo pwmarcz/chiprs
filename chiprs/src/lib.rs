@@ -13,20 +13,20 @@ pub const STACK_SIZE: usize = 0x10;
 pub const KEYS_SIZE: usize = 0x10;
 
 pub struct Chip {
-    pub v: [u8; V_SIZE],
-    pub i: u16,
-    pub pc: u16,
-    pub sp: u8,
-    pub stack: [u16; STACK_SIZE],
-    pub dt: u8,
-    pub st: u8,
-    pub keys: [bool; KEYS_SIZE],
-    pub key_wait_reg: Option<u8>,
+    v: [u8; V_SIZE],
+    i: u16,
+    pc: u16,
+    sp: u8,
+    stack: [u16; STACK_SIZE],
+    dt: u8,
+    st: u8,
+    keys: [bool; KEYS_SIZE],
+    key_wait_reg: Option<u8>,
 
     pub memory: Memory,
     pub display: Display,
 
-    pub rng: rand::rngs::ThreadRng,
+    rng: rand::rngs::ThreadRng,
 }
 
 impl Chip {
@@ -76,6 +76,10 @@ impl Chip {
         }
         println!();
         println!();
+    }
+
+    pub fn jump(&mut self, addr: u16) {
+        self.pc = addr;
     }
 
     pub fn key_down(&mut self, key: u8) {
