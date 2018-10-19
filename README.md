@@ -1,11 +1,11 @@
-# `chiprs` - a Rust Chip-8 emulator
+# `chiprs` - a CHIP-8 emulator in Rust
 
 This is a simple project I'm writing to teach myself Rust.
+[CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) is a virtual machine from the
+1970s, used for running simple games. Here's the [CHIP-8 technical specification](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM).
 
 ![cave](img/cave-50.png)
 ![connect4](img/connect4-50.png)
-
-See [CHIP-8 technical specification](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM).
 
 ## Directory structure
 
