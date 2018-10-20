@@ -112,7 +112,7 @@ impl Instr {
                 0x65 => Some(LD_R_II(x)),
                 _ => None,
             },
-            _ => panic!("impossible")
+            _ => unreachable!(a)
         }
     }
 
