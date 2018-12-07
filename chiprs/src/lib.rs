@@ -4,9 +4,9 @@ pub mod instr;
 pub mod memory;
 pub mod display;
 
-use instr::Instr;
-use memory::{Memory, MEMORY_SIZE};
-use display::Display;
+use crate::instr::Instr;
+use crate::memory::{Memory, MEMORY_SIZE};
+use crate::display::Display;
 
 pub const V_SIZE: usize = 0x10;
 pub const STACK_SIZE: usize = 0x10;
@@ -125,7 +125,7 @@ impl Chip {
     fn run_instr(&mut self, instr: Instr) -> Result<(), String> {
         self.skip();
 
-        use instr::Instr::*;
+        use crate::instr::Instr::*;
         match instr {
             CLS => {
                 self.display.clear();
@@ -324,7 +324,7 @@ mod tests {
     fn test_fib() {
         let mut chip = Chip::new();
 
-        use instr::Instr::*;
+        use crate::instr::Instr::*;
         // Calc Fibonacci
         chip.memory.load_program(0x200, &[
             LD_R_B(0, 7),

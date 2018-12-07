@@ -3,7 +3,7 @@ extern crate chiprs;
 
 mod sdl_interface;
 
-use sdl_interface::run_sdl_interface;
+use crate::sdl_interface::run_sdl_interface;
 use chiprs::Chip;
 
 fn main() {

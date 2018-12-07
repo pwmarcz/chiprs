@@ -1,4 +1,4 @@
-use instr::Instr;
+use crate::instr::Instr;
 
 pub const MEMORY_SIZE: usize = 0x1000;
 pub const FONT_SIZE: usize = 0x1000;
