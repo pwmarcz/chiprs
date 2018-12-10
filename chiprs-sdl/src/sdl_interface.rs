@@ -62,7 +62,7 @@ pub fn run_sdl_interface(chip: &mut Chip) {
         }
         while next_step < now {
             chip.step().unwrap();
-            next_step += Duration::new(0, 1_000_000_000u32 / 500);
+            next_step += Duration::new(0, 1_000_000_000u32 / 5000);
         }
     }
 }
