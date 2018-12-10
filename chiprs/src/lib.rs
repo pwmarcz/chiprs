@@ -203,7 +203,7 @@ impl Chip {
                 let vx = self.v[x as usize];
                 self.memory.bytes[self.i as usize] = vx / 100;
                 self.memory.bytes[(self.i + 1)as usize] = (vx / 10) % 10;
-                self.memory.bytes[(self.i + 2) as usize] = (vx / 100) % 10;
+                self.memory.bytes[(self.i + 2) as usize] = vx % 10;
             }
             LD_II_R(x) => {
                 if self.i as usize > MEMORY_SIZE - 1 {
