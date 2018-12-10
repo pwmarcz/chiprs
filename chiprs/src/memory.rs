@@ -45,7 +45,7 @@ impl Memory {
 fn parse_font(s: &str) -> [u8; FONT_SIZE] {
     let mut result = [0; FONT_SIZE];
     for (i, letter) in s.split(".").enumerate() {
-        for (j, line) in letter.trim().lines().enumerate() {
+        for (j, line) in letter.lines().skip(1).enumerate() {
             let mut a: u8 = 0;
             if line.get(0..1) == Some("#") { a |= 0x80; }
             if line.get(1..2) == Some("#") { a |= 0x40; }
