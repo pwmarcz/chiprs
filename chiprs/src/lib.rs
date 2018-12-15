@@ -206,16 +206,21 @@ impl Chip {
                 self.memory.bytes[(self.i + 2) as usize] = vx % 10;
             }
             LD_II_R(x) => {
-                if self.i as usize > MEMORY_SIZE - 1 {
+                if self.i as usize + x as usize > MEMORY_SIZE - 1 {
                     return Err("I out of bounds".to_string());
                 }
-                self.memory.bytes[self.i as usize] = self.v[x as usize];
+                for i in 0..(x as usize + 1) {
+                    self.memory.bytes[self.i as usize + i] = self.v[i];
+                }
             }
             LD_R_II(x) => {
-                if self.i as usize > MEMORY_SIZE - 1 {
+                if self.i as usize + x as usize > MEMORY_SIZE - 1 {
                     return Err("I out of bounds".to_string());
                 }
-                self.v[x as usize] = self.memory.bytes[self.i as usize];
+                for i in 0..(x as usize + 1) {
+                    self.v[i] = self.memory.bytes[self.i as usize + i];
+                }
+
             }
             OR(x, y) => {
                 self.v[x as usize] |= self.v[y as usize];
